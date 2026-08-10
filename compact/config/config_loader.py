@@ -46,6 +46,7 @@ class ConfigLoader:
         'indirectmemory': 'compact.prefetchingalgorithm.impl.indirectmemory',
         'storeorderedstreamer': 'compact.prefetchingalgorithm.impl.storeorderedstreamer',
         'dspatch': 'compact.prefetchingalgorithm.impl.dspatch',
+        'sppam': 'compact.prefetchingalgorithm.impl.sppam',
     }
 
     def __init__(self, config_path: str):

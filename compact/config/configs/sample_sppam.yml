@@ -1,0 +1,53 @@
+# Compact Sample Configuration: SPPAM Algorithm
+# SPPAM combines signature-based delta prediction (SPP) with an access-map
+# pattern (AMP) and a confidence-based throttle on prefetch depth.
+# Best for: streams with recurring PC-local delta patterns plus spatial
+#           locality within a memory region.
+
+algorithm: sppam
+
+# SPPAM-specific configuration
+algorithm_config:
+  signature_bits: 8               # Width of the folded delta-history signature
+  signature_shift: 3              # Left-shift applied when folding a new delta in
+  confidence_threshold: 0.5       # Minimum confidence (0-1) to act on a prediction
+  max_prefetch_degree: 4          # Max predictions issued per access
+  region_size: 2048                # Access-map region size in bytes
+  block_size: 64                  # Cache block size in bytes
+
+# Logging configuration
+log_file: "compact/config/logs/sppam_run.log"
+log_level: INFO
+output_format: both
+
+# ============================================================================
+# HOW TO RUN:
+# ============================================================================
+# From project root directory:
+#
+#   python run.py --config compact/config/configs/sample_sppam.yml
+#
+# Or with a stricter confidence gate:
+#
+#   python run.py --config compact/config/configs/sample_sppam.yml \
+#                 --config-override algorithm_config.confidence_threshold=0.75
+#
+# ============================================================================
+# ALGORITHM DESCRIPTION:
+# ============================================================================
+# SPPAM (Signature Pattern Prediction and Access-Map Prefetcher) tracks, per
+# PC, a folded signature of recent address deltas and trains a
+# signature -> delta confidence table online (SPP). It chases that table
+# forward to predict a run of future addresses, with run length scaled by
+# confidence (the throttle). Independently, it maintains a per-region
+# access-map bitmap (AMP) and extrapolates the dominant stride between
+# already-accessed blocks in the current region, catching spatial locality
+# that PC-keyed signatures miss.
+#
+# Key parameters:
+#   - confidence_threshold: Minimum confidence required before a prediction
+#     is trusted (higher = fewer, more accurate prefetches).
+#   - max_prefetch_degree: Caps how many predictions are chased/issued per
+#     access.
+#   - region_size / block_size: Geometry used by the access-map component.
+# ============================================================================

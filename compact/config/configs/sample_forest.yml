@@ -1,0 +1,68 @@
+# Compact Sample Configuration: Forest Algorithm
+# Forest is an access-aware, heterogeneous tree-based neighboring prefetcher
+# (TBNp) for GPU unified virtual memory: it classifies each memory object's
+# access pattern at runtime and reconfigures that object's prefetch tree
+# (tree size / leaf size) to the shape that best fits the pattern.
+# Best for: GPU-style UVM traces mixing streaming, dense, and sparse objects
+#           where one fixed tree shape would be wrong for most of them.
+
+algorithm: forest
+
+# Forest-specific configuration
+algorithm_config:
+  page_size: 4096                 # Minimum migration/prefetch unit (bytes)
+  object_size: 4194304            # Granularity used to group addresses into a "data object" (4MB)
+  default_tree_size: 2097152      # LC / pre-classification (baseline TBNp) tree size (2MB)
+  default_leaf_size: 65536        # LC / pre-classification leaf size (64KB)
+  ls_tree_size: 4194304           # Linear/Streaming tree size (4MB)
+  ls_leaf_size: 262144            # Linear/Streaming leaf size (256KB)
+  hchi_tree_size: 524288          # High-Coverage High-Intensity tree size (512KB)
+  hchi_leaf_size: 65536           # High-Coverage High-Intensity leaf size (64KB)
+  hcli_tree_size: 524288          # High-Coverage Low-Intensity tree size (512KB)
+  hcli_leaf_size: 16384           # High-Coverage Low-Intensity leaf size (16KB)
+  profiling_window: 32            # Accesses sampled per object before classifying
+  linearity_threshold: 0.8        # Minimum R^2 to classify as Linear/Streaming
+  coverage_threshold: 0.6         # Accessed-range ratio separating HCHI/HCLI from LC
+  intensity_threshold: 0.4        # Accessed-page-count ratio separating HCHI from HCLI
+  max_prefetch_degree: 64         # Cap on prefetch addresses issued per access
+  mrb_size: 256                   # Suppression-buffer size to avoid re-issuing addresses
+
+# Logging configuration
+log_file: "compact/config/logs/forest_run.log"
+log_level: INFO
+output_format: both
+
+# ============================================================================
+# HOW TO RUN:
+# ============================================================================
+# From project root directory:
+#
+#   python run.py --config compact/config/configs/sample_forest.yml
+#
+# ============================================================================
+# ALGORITHM DESCRIPTION:
+# ============================================================================
+# Forest is based on: Mao Lin, Yuan Feng, Guilherme Cox, Hyeran Jeon.
+# "Forest: Access-aware GPU UVM Management". ISCA 2025.
+# https://doi.org/10.1145/3695053.3731047
+#
+# GPUs mitigate UVM far-fault overhead with a Tree-based Neighboring
+# Prefetcher (TBNp): a full binary tree of fixed-size leaves covers each
+# memory region; a fault on any page in a leaf migrates the whole leaf, and
+# once more than half of a node's descendant pages are resident, the rest
+# of that node is proactively prefetched too -- a check that cascades up
+# the tree. Conventional TBNp uses one fixed tree shape for every object.
+# Forest instead samples each object's early accesses, classifies its
+# pattern (Linear/Streaming, Non-Linear High-Coverage High-Intensity,
+# Non-Linear High-Coverage Low-Intensity, or Non-Linear Low-Coverage), and
+# switches that object to the tree shape found to work best for the
+# pattern: large trees/leaves for streaming, small trees for dense-narrow
+# accesses, small trees with tiny leaves for sparse-wide accesses.
+#
+# Key parameters:
+#   - object_size: How addresses are grouped for pattern classification.
+#   - profiling_window: How many accesses are sampled before classifying.
+#   - linearity_threshold / coverage_threshold / intensity_threshold:
+#     Classification thresholds from the paper (R^2 = 0.8, P = 0.6, A = 0.4).
+#   - *_tree_size / *_leaf_size: The tree shape assigned to each pattern.
+# ============================================================================

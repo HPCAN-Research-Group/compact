@@ -89,6 +89,8 @@ Specialized techniques:
 - Hot Data Stream (HDS): Models bursty access patterns with state machines
 - Instruction Pointer Classification (IPCP): Classifies different PC patterns
 - Metadata Based: Uses per-PC metadata with confidence tracking
+- SPPAM: Combines signature-based delta prediction with access-map extrapolation
+- Forest: GPU UVM tree-based neighboring prefetcher with per-object, access-aware tree reconfiguration
 
 ---
 

@@ -47,6 +47,7 @@ class ConfigLoader:
         'storeorderedstreamer': 'compact.prefetchingalgorithm.impl.storeorderedstreamer',
         'dspatch': 'compact.prefetchingalgorithm.impl.dspatch',
         'sppam': 'compact.prefetchingalgorithm.impl.sppam',
+        'forest': 'compact.prefetchingalgorithm.impl.forest',
     }
 
     def __init__(self, config_path: str):

@@ -192,6 +192,8 @@ class MRB:
 
     def insert(self, addr: int) -> None:
         """Insert an address into the MRB, moving it to most-recent if present."""
+        if self.size <= 0:  # a zero-sized MRB suppresses nothing
+            return
         if addr in self.buf:
             self.buf.remove(addr)
             self.buf.append(addr)

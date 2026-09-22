@@ -48,6 +48,7 @@ class ConfigLoader:
         'dspatch': 'compact.prefetchingalgorithm.impl.dspatch',
         'sppam': 'compact.prefetchingalgorithm.impl.sppam',
         'forest': 'compact.prefetchingalgorithm.impl.forest',
+        'pythia': 'compact.prefetchingalgorithm.impl.pythia',
     }
 
     def __init__(self, config_path: str):

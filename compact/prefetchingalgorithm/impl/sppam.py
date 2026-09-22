@@ -15,8 +15,8 @@ Overview:
   the shared Scheduler (outstanding cap + MRB de-duplication).
 
 References:
-- Signature Path Prefetcher (SPP), Kim et al., ISCA 2016.
-- Access Map Pattern Matching (AMPM), Ishii et al., ISCA 2009.
+- Signature Path Prefetcher (SPP), Kim et al., MICRO 2016.
+- Access Map Pattern Matching (AMPM), Ishii et al., ICS 2009.
 """
 
 from typing import Dict, List, Optional, Tuple

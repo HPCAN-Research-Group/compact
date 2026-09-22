@@ -1,0 +1,89 @@
+# Compact Sample Configuration: Pythia Algorithm
+# Pythia is an online reinforcement-learning prefetcher: it learns, at run
+# time, which prefetch offset to take for a given program context, guided by
+# rewards that grade prefetch accuracy, timeliness, and memory bandwidth use.
+# Best for: traces whose useful offset is not known ahead of time, or whose
+#           best offset changes between program phases.
+
+algorithm: pythia
+
+# Pythia-specific configuration
+algorithm_config:
+  block_size: 64                  # Cache line size (prefetch granularity)
+  page_size: 4096                 # Prefetches never cross this boundary
+  alpha: 0.0065                   # SARSA learning rate (paper: 0.0065)
+  gamma: 0.556                    # Discount factor (paper: 0.556)
+  epsilon: 0.05                   # Exploration rate; paper uses 0.002, see note below
+  num_planes: 3                   # Tile-coding planes per vault
+  num_tiles: 128                  # Tiles per plane
+  st_size: 64                     # Signature table entries (per-page history)
+  eq_size: 256                    # Evaluation queue entries (in-flight actions)
+  delta_history: 4                # Deltas in the "sequence of last-4 deltas" feature
+  timeliness_window: 1            # Accesses within which a prefetch counts as timely
+  bandwidth_window: 64            # Accesses sampled to estimate bandwidth usage
+  bandwidth_threshold: 0.5        # Above this issue rate, high-bandwidth rewards apply
+  enable_dynamic_degree: true     # Scale degree with the agent's confidence
+  prefetch_degree: 1              # Degree used when dynamic degree is off
+  mrb_size: 2                     # Recently-issued prefetch tracker (duplicate filter)
+  enable_tracker_hit_reward: false # Penalise duplicate prefetches (off in the artifact)
+  seed: 200                       # Plane-shift / exploration seed, for reproducibility
+
+  # Reward levels (paper Table 2)
+  reward_accurate_timely: 20      # R_AT
+  reward_accurate_late: 12        # R_AL
+  reward_loss_of_coverage: -12    # R_CL  (action would cross the page boundary)
+  reward_inaccurate_low_bw: -8    # R_IN^L
+  reward_inaccurate_high_bw: -14  # R_IN^H
+  reward_no_prefetch_low_bw: -4   # R_NP^L
+  reward_no_prefetch_high_bw: -2  # R_NP^H
+
+# Logging configuration
+log_file: "compact/config/logs/pythia_run.log"
+log_level: INFO
+output_format: both
+
+# ============================================================================
+# HOW TO RUN:
+# ============================================================================
+# From project root directory:
+#
+#   python run.py --config compact/config/configs/sample_pythia.yml
+#
+# ============================================================================
+# ALGORITHM DESCRIPTION:
+# ============================================================================
+# Pythia is based on: Rahul Bera, Konstantinos Kanellopoulos, Anant V. Nori,
+# Taha Shahroodi, Sreenivas Subramoney, Onur Mutlu. "Pythia: A Customizable
+# Hardware Prefetching Framework Using Online Reinforcement Learning".
+# MICRO 2021. https://doi.org/10.1145/3466752.3480114
+#
+# Pythia treats prefetching as a reinforcement-learning problem. Each demand
+# request becomes a state built from program context -- by default the two
+# features the paper's design-space exploration selected, PC+Delta and the
+# sequence of the last four deltas. From that state the agent picks an action
+# out of a fixed offset list, {-6,-3,-1,0,1,3,4,5,10,11,12,16,22,23,30,32},
+# where 0 means "do not prefetch". Every action taken waits in the Evaluation
+# Queue until a demand request either uses its prefetch or the entry ages
+# out, at which point a reward is assigned and the agent learns with SARSA:
+#
+#   Q(S, A) <- Q(S, A) + alpha * [R + gamma * Q(S', A') - Q(S, A)]
+#
+# Q-values live in the QVStore, one vault per feature, each vault a set of
+# tile-coded planes: a feature-action Q-value is the sum of its planes'
+# partial values, and the state-action Q-value is the max across vaults.
+#
+# Key parameters:
+#   - epsilon: How often the agent explores instead of taking its best known
+#     action. The paper's 0.002 assumes billion-instruction runs; on the much
+#     shorter traces Compact analyses, the agent needs to explore more often
+#     to escape the first action that earns a positive reward, hence 0.05
+#     here. Lower it for long traces, raise it for very short ones.
+#   - eq_size: How long an issued prefetch is watched before being written
+#     off as inaccurate. Also the delay before an action's reward is learned.
+#   - timeliness_window: Accesses within which a demand must arrive for the
+#     prefetch to earn R_AT instead of R_AL. Compact's analyzer credits a
+#     prefetch only when the very next access uses it, so the default is 1.
+#   - reward_*: The reward levels. Making R_IN more negative buys accuracy at
+#     the cost of coverage; the high-bandwidth variants make the agent more
+#     conservative when it is already issuing many prefetches.
+# ============================================================================

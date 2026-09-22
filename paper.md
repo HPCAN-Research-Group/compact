@@ -16,7 +16,7 @@ affiliations:
     name: Sharif University of Technology, Iran
   - index: 2
     name: IPM Institute For Research In Fundamental Sciences, Iran
-date: 3 November 2025
+date: 22 September 2026
 bibliography: paper.bib
 ---
 
@@ -42,9 +42,9 @@ A key design trade-off is prioritizing extensibility and rapid experimentation o
 
 # Research Impact Statement
 
-COMPACT enables systematic and reproducible evaluation of hardware data prefetching algorithms across a wide range of prediction paradigms within a single unified framework. The software provides 28 implemented prefetching algorithms spanning classical heuristics such as Best-Offset [@bestoffset] and GHB [@ghb], spatial predictors such as SMS [@sms] and Bingo [@bingo], temporal correlators such as Domino [@domino] and EBCP [@ebcp], and learning-based approaches such as LSTM-based LearnPrefetch [@hashemi2018] and Neural [@neural], representing the most comprehensive open-source collection available for comparative prefetching research. By standardizing algorithm interfaces, cache modeling, and performance metrics, the framework allows researchers to compare prefetching strategies under identical experimental conditions—a capability difficult to achieve using traditional simulator-based workflows.
+COMPACT enables systematic and reproducible evaluation of hardware data prefetching algorithms across a wide range of prediction paradigms within a single unified framework. The software provides 33 implemented prefetching algorithms spanning classical heuristics such as Best-Offset [@bestoffset] and GHB [@ghb], spatial predictors such as SMS [@sms] and Bingo [@bingo], temporal correlators such as Domino [@domino] and EBCP [@ebcp], and learning-based approaches such as LSTM-based LearnPrefetch [@hashemi2018], Neural [@neural], and the reinforcement-learning prefetcher Pythia [@pythia], representing the most comprehensive open-source collection available for comparative prefetching research. By standardizing algorithm interfaces, cache modeling, and performance metrics, the framework allows researchers to compare prefetching strategies under identical experimental conditions—a capability difficult to achieve using traditional simulator-based workflows.
 
-The framework is ready for community adoption and demonstrates research significance through key professional features: a comprehensive automated test suite covering all 28 algorithms, structured documentation with detailed API references, a reproducible YAML-based configuration system with sample configurations for major algorithms, open-source licensing, and standard Python packaging for straightforward installation. These characteristics lower the barrier to prefetcher research by reducing implementation overhead, allowing new algorithms to be expressed independently of simulator internals while supporting rapid hypothesis testing and controlled comparisons.
+The framework is ready for community adoption and demonstrates research significance through key professional features: a comprehensive automated test suite covering all 33 algorithms, structured documentation with detailed API references, a reproducible YAML-based configuration system with sample configurations for major algorithms, open-source licensing, and standard Python packaging for straightforward installation. These characteristics lower the barrier to prefetcher research by reducing implementation overhead, allowing new algorithms to be expressed independently of simulator internals while supporting rapid hypothesis testing and controlled comparisons.
 
 COMPACT fills a documented gap between educational demonstration tools and production simulators, providing sufficient fidelity for early-stage algorithm design and comparative studies while maintaining development speed that heavyweight simulators cannot match. This feature positions COMPACT as a practical foundation for ongoing computer architecture research, and as an educational platform enabling students to implement and analyze prefetching mechanisms without extensive simulator expertise.
 
@@ -116,35 +116,15 @@ The following prefetching algorithms are implemented in COMPACT. Brief descripti
 
 - **Triangel Prefetcher** [@triangel]: The triangel prefetcher uses both pattern-based prediction and neighbor-based prediction. It identifies recurring access patterns through training and tracks Markov-style temporal metadata to predict neighboring address relationships. This hybrid approach allows the prefetcher to optimize both accuracy and timeliness in temporal prefetching.
 
+- **Reference Prediction Table Prefetcher** [@referencepredictiontable]: The Reference Prediction Table (RPT) prefetcher records, for every load PC, the last address it referenced and the stride between its two most recent references. A per-entry finite state machine (initial, transient, steady, and unstable) tracks how consistently that stride repeats, and prefetches for the next address in the sequence are issued only once the entry reaches a state where the stride is considered reliable. This filters out loads whose strides fluctuate while still following regular array-like traversals closely.
+
+- **SPPAM Prefetcher** [@spp; @ampm]: The Signature Pattern Prediction and Access Map (SPPAM) prefetcher combines two complementary mechanisms. Following the signature path prefetcher, the recent delta history of a page is folded into a compact signature that indexes a pattern table of delta candidates with confidence counters; the table is chased forward to predict a run of future deltas, with the length of that run throttled by the confidence accumulated along the path. In parallel, and following access map pattern matching, a per-region bitmap of previously touched block offsets is used to extrapolate the stride between recent accesses in the region independently of the PC, which lets the prefetcher keep issuing useful requests for regions whose delta signature has not yet been trained. This design follows a proposal submitted to the 4th Data Prefetching Championship, co-located with HPCA 2026.
+
+- **Forest Prefetcher** [@forest]: The forest prefetcher targets GPU unified virtual memory, where a tree-based neighboring prefetcher covers each memory region with a full binary tree of fixed-size leaves: a fault on any page in a leaf migrates that whole leaf, and once more than half of a node's descendant pages are resident the remainder of that node is migrated as well, with the check cascading up the tree. Because a single fixed tree shape suits neither streaming nor sparse access patterns, Forest samples each memory object's early accesses, classifies its pattern as linear/streaming or as non-linear with high-coverage high-intensity, high-coverage low-intensity, or low-coverage behavior, and reconfigures that object's tree size and leaf size to the shape that best fits the observed pattern.
+
+- **Pythia Prefetcher** [@pythia]: The Pythia prefetcher formulates prefetching as a reinforcement-learning problem. Each demand request forms a state built from program context—by default the program counter combined with the current delta, together with the sequence of the last four deltas—from which the prefetcher selects an action out of a fixed list of prefetch offsets. Every action taken is held in an evaluation queue until a later demand request either uses its prefetch or the entry ages out, at which point the action receives a reward that grades prefetch accuracy and timeliness while also accounting for memory bandwidth usage. Q-values are stored per feature and tile-coded across several hash planes, and are updated online with SARSA under an epsilon-greedy policy, so the prefetcher adapts its offset selection to program phases without offline training.
+
 # References
 
-- [@markovpredictor]
-- [@correlation]
-- [@hds]
-- [@tcp]
-- [@ghb]
-- [@storeorderedstreamer]
-- [@sms]
-- [@ebcp]
-- [@feedbackdirected]
-- [@temporalmemorystreaming]
-- [@linear]
-- [@bfetch]
-- [@indirectmemory]
-- [@bestoffset]
-- [@f_tdc_prefetcher]
-- [@graph]
-- [@tempo]
-- [@domino]
-- [@eventtriggered]
-- [@hashemi2018]
-- [@bingo]
-- [@dspatch]
-- [@metadata]
-- [@perceptron]
-- [@triage]
-- [@ipcp]
-- [@neural]
-- [@triangel]
 
 [^1]: These authors contributed equally to this work.

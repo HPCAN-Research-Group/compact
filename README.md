@@ -91,6 +91,7 @@ Specialized techniques:
 - Metadata Based: Uses per-PC metadata with confidence tracking
 - SPPAM: Combines signature-based delta prediction with access-map extrapolation
 - Forest: GPU UVM tree-based neighboring prefetcher with per-object, access-aware tree reconfiguration
+- Pythia: Online reinforcement-learning prefetcher that learns prefetch offsets from program context and bandwidth-aware rewards
 
 ---
 

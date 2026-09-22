@@ -177,3 +177,5 @@ cython_debug/
 .pre-commit-config.yaml
 # supervisor hand-off notes
 paper-additions.txt
+paper.pdf
+jats/

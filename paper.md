@@ -16,7 +16,7 @@ affiliations:
     name: Sharif University of Technology, Iran
   - index: 2
     name: IPM Institute For Research In Fundamental Sciences, Iran
-date: 3 November 2025
+date: 22 September 2026
 bibliography: paper.bib
 ---
 
@@ -126,33 +126,5 @@ The following prefetching algorithms are implemented in COMPACT. Brief descripti
 
 # References
 
-- [@markovpredictor]
-- [@correlation]
-- [@hds]
-- [@tcp]
-- [@ghb]
-- [@storeorderedstreamer]
-- [@sms]
-- [@ebcp]
-- [@feedbackdirected]
-- [@temporalmemorystreaming]
-- [@linear]
-- [@bfetch]
-- [@indirectmemory]
-- [@bestoffset]
-- [@f_tdc_prefetcher]
-- [@graph]
-- [@tempo]
-- [@domino]
-- [@eventtriggered]
-- [@hashemi2018]
-- [@bingo]
-- [@dspatch]
-- [@metadata]
-- [@perceptron]
-- [@triage]
-- [@ipcp]
-- [@neural]
-- [@triangel]
 
 [^1]: These authors contributed equally to this work.

@@ -1,4 +1,3 @@
-from sympy import false
 
 from compact.prefetchingalgorithm.prefetchingalgorithm import PrefetchAlgorithm
 
@@ -17,6 +16,6 @@ class DummyAlgo(PrefetchAlgorithm):
 def test_dummy_algo_progress():
     algo = DummyAlgo()
     algo.init()
-    preds = algo.progress(10, prefetch_hit=false)
+    preds = algo.progress(10, prefetch_hit=False)
     assert preds == [11]
     algo.close()
